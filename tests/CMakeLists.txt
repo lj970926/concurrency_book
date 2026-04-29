@@ -1,0 +1,4 @@
+add_executable(spin_mutex_test spin_mutex_test.cpp)
+target_link_libraries(spin_mutex_test PRIVATE concurrency_book)
+
+add_test(NAME spin_mutex_test COMMAND spin_mutex_test)
