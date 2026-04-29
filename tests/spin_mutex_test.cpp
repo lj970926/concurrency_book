@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 lj970926
+//
+// SPDX-License-Identifier: MIT
+
 #include "spin_mutex.h"
 
 #include <atomic>

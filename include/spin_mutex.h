@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2026 lj970926
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef CONCURRENCY_BOOK_SPIN_MUTEX_H
 #define CONCURRENCY_BOOK_SPIN_MUTEX_H
 
