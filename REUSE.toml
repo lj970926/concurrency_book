@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "concurrency_book"
+SPDX-PackageSupplier = "lj970926"
+SPDX-PackageDownloadLocation = "https://github.com/user/concurrency_book"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 lijin"
+SPDX-License-Identifier = "MIT"
