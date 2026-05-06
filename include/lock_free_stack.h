@@ -10,6 +10,7 @@ private:
         Node(const T& d): data(d) {}
     };
     std::atomic<Node*> head_ = nullptr;
+    std::atomic<int> size_ = 0;
 public:
     LockFreeStack() = default;
     void push(const T& value) {
@@ -18,5 +19,10 @@ public:
         while (!head_.compare_exchange_weak(new_node->next, new_node)) {
             std::this_thread::yield();
         }
+        size_.fetch_add(1);
+    }
+
+    int size() {
+        return size_.load();
     }
 };
