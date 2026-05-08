@@ -9,6 +9,8 @@ static void smoke_test() {
     LockFreeStack<int> st;
     st.push(0);
     st.push(1);
+    st.pop();
+    st.pop();
 }
 
 static void concurrent_push_test() {
@@ -18,6 +20,7 @@ static void concurrent_push_test() {
     auto insert_vals = [&st](const std::vector<int>& values){
         for (int v: values) {
             st.push(v);
+            st.pop();
         }
     };
 
