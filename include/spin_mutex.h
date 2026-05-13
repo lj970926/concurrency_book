@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef CONCURRENCY_BOOK_SPIN_MUTEX_H
-#define CONCURRENCY_BOOK_SPIN_MUTEX_H
 
+#pragma once
 #include <atomic>
 
 class SpinMutex {
@@ -23,5 +22,3 @@ public:
         flag_.clear(std::memory_order_release);
     }
 };
-
-#endif

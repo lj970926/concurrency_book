@@ -6,5 +6,5 @@ SPDX-PackageDownloadLocation = "https://github.com/user/concurrency_book"
 [[annotations]]
 path = "**"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 lijin"
+SPDX-FileCopyrightText = "2026 lj970926"
 SPDX-License-Identifier = "MIT"

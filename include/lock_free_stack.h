@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 lj970926
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#pragma once
 #include <atomic>
 #include <thread>
 #include <memory>
