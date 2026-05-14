@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 lj970926
+//
+// SPDX-License-Identifier: MIT
+
 #include "lock_free_stack.h"
 
 #include <vector>

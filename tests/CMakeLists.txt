@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 lj970926
+#
+# SPDX-License-Identifier: MIT
+
 file(GLOB SRCS CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cc"

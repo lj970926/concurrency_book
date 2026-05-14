@@ -1,4 +1,13 @@
 repos:
+  - repo: local
+    hooks:
+      - id: reuse-annotate
+        name: reuse annotate source files
+        entry: bash scripts/reuse_annotate.sh
+        language: system
+        files: '^(CMakeLists\.txt|.*\.cmake|(?:include|src|tests|scripts)/(?:CMakeLists\.txt|.*\.(?:h|hh|hpp|cc|cpp|cxx)))$'
+        types: [text]
+
   - repo: https://github.com/fsfe/reuse-tool
     rev: v5.0.2
     hooks:

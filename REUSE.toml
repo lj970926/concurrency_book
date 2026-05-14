@@ -4,7 +4,14 @@ SPDX-PackageSupplier = "lj970926"
 SPDX-PackageDownloadLocation = "https://github.com/user/concurrency_book"
 
 [[annotations]]
-path = "**"
+path = [
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "LICENSES/MIT.txt",
+    "REUSE.toml",
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 lj970926"
 SPDX-License-Identifier = "MIT"
