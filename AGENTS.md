@@ -46,6 +46,9 @@ When you need Python, run `source ~/.venv/bin/activate` first.
 
 Recent history uses Conventional Commit-style subjects, mainly `feat:` and `fix:`. Keep commit messages imperative and specific, for example `feat: add hazard-pointer stack test` or `fix: correct acquire-release example`.
 
+When Codex creates a commit, include `Co-authored-by: Codex <codex@openai.com>` in the commit message footer.
+When Claude Code creates a commit, include `Co-authored-by: Claude <noreply@anthropic.com>` in the footer.
+
 Pull requests should include a short description of the concurrency behavior changed, the tests run, and any important memory-ordering or reclamation assumptions. Link related issues when available. For changes to examples, mention the executable in `scripts/` that demonstrates the behavior.
 
 ## Agent-Specific Notes
