@@ -1,6 +1,20 @@
 repos:
   - repo: local
     hooks:
+      - id: clang-format
+        name: clang-format C++ sources
+        entry: clang-format -i
+        language: system
+        files: '^(include|src|tests|scripts)/.*\.(?:h|hh|hpp|cc|cpp|cxx)$'
+        types: [text]
+
+      - id: cpplint
+        name: cpplint C++ sources
+        entry: cpplint
+        language: system
+        files: '^(include|src|tests|scripts)/.*\.(?:h|hh|hpp|cc|cpp|cxx)$'
+        types: [text]
+
       - id: reuse-annotate
         name: reuse annotate source files
         entry: bash scripts/reuse_annotate.sh

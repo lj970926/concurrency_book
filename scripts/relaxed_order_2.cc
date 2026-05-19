@@ -21,7 +21,7 @@ ValueSnapshot values3[LOOP_CNT];
 ValueSnapshot values4[LOOP_CNT];
 ValueSnapshot values5[LOOP_CNT];
 
-void increment_vals(std::atomic<int>*vals_to_write, ValueSnapshot* vals_snapshot) {
+void increment_vals(std::atomic<int>* vals_to_write, ValueSnapshot* vals_snapshot) {
     while (!go) {
         std::this_thread::yield();
     }
@@ -32,7 +32,7 @@ void increment_vals(std::atomic<int>*vals_to_write, ValueSnapshot* vals_snapshot
         vals_snapshot[i].z = z.load(std::memory_order_relaxed);
         vals_to_write->store(i + 1, std::memory_order_relaxed);
     }
-    
+
     return;
 }
 
@@ -52,7 +52,8 @@ void print_vals(ValueSnapshot* vals_snapshot) {
         if (i != 0) {
             std::cout << ", ";
         }
-        std::cout << "(" << vals_snapshot[i].x << ", " << vals_snapshot[i].y << ", " << vals_snapshot[i].z << ")";
+        std::cout << "(" << vals_snapshot[i].x << ", " << vals_snapshot[i].y << ", "
+                  << vals_snapshot[i].z << ")";
     }
     std::cout << std::endl;
 }

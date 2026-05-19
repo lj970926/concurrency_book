@@ -103,6 +103,7 @@ public:
             nodes_to_delete = next;
         }
     }
+
 private:
     PendingList() = default;
 
@@ -113,7 +114,8 @@ private:
         void* data;
         PendingNode* next;
         std::function<void(void*)> deleter;
-        PendingNode(void* d, std::function<void(void*)> del): data(d), next(nullptr), deleter(del) {}
+        PendingNode(void* d, std::function<void(void*)> del)
+            : data(d), next(nullptr), deleter(del) {}
     };
 
     /**

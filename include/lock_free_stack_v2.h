@@ -6,8 +6,8 @@
 
 #pragma once
 #include <atomic>
-#include <thread>
 #include <memory>
+#include <thread>
 
 #include "hp_manager.h"
 
@@ -21,7 +21,7 @@
  * either deleted immediately or deferred until no hazard pointer references
  * them.
  */
-template<typename T>
+template <typename T>
 class LockFreeStackV2 {
 private:
     /**
@@ -30,7 +30,7 @@ private:
     struct Node {
         std::shared_ptr<T> data;
         Node* next = nullptr;
-        Node(std::shared_ptr<T> d): data(d) {}
+        Node(std::shared_ptr<T> d) : data(d) {}
     };
 
     std::atomic<Node*> head_ = nullptr;
@@ -69,7 +69,7 @@ public:
                 hp.store(tmp);
                 old_head = head_.load();
             } while (old_head != tmp);
-        // The cost of fake failed of weak is high, so we use strong here.
+            // The cost of fake failed of weak is high, so we use strong here.
         } while (old_head && !head_.compare_exchange_strong(old_head, old_head->next));
 
         hp.store(nullptr);
@@ -85,5 +85,4 @@ public:
         }
         return res;
     }
-
 };

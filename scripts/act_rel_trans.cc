@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 #include <atomic>
-#include <thread>
 #include <cassert>
-
+#include <thread>
 
 std::atomic<int> sync = 0;
 std::atomic<int> data[5] = {-1, -1, -1, -1, -1};
@@ -25,8 +24,7 @@ void thread_2() {
 }
 
 void thread_3() {
-    while (sync.load(std::memory_order_acquire) < 2
-) ;
+    while (sync.load(std::memory_order_acquire) < 2);
     for (int i = 0; i < 5; ++i) {
         assert(data[i] == i);
     }

@@ -86,8 +86,8 @@ void admits_only_one_thread_at_a_time_test() {
                 const int current_inside = inside.fetch_add(1, std::memory_order_relaxed) + 1;
                 int observed = max_inside.load(std::memory_order_relaxed);
                 while (observed < current_inside &&
-                       !max_inside.compare_exchange_weak(
-                           observed, current_inside, std::memory_order_relaxed)) {
+                       !max_inside.compare_exchange_weak(observed, current_inside,
+                                                         std::memory_order_relaxed)) {
                 }
                 inside.fetch_sub(1, std::memory_order_relaxed);
             }

@@ -6,22 +6,23 @@
 
 #pragma once
 #include <atomic>
-#include <thread>
-#include <memory>
 #include <cassert>
+#include <memory>
+#include <thread>
 
-template<typename T>
+template <typename T>
 class LockFreeStack {
 private:
     struct Node {
         std::shared_ptr<T> data;
         Node* next = nullptr;
-        Node(const T& d): data(std::make_shared<T>(d)) {}
+        Node(const T& d) : data(std::make_shared<T>(d)) {}
     };
     std::atomic<Node*> head_ = nullptr;
     std::atomic<int> size_ = 0;
     std::atomic<int> threads_in_pop_ = 0;
     std::atomic<Node*> nodes_to_delete_ = nullptr;
+
 public:
     LockFreeStack() = default;
     void push(const T& value) {

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <memory>
 #include <atomic>
+#include <memory>
 #include <thread>
 
 /**
  * @brief The lock-free stack use reference couter.
  */
-template<typename T>
+template <typename T>
 class LockFreeStackV3 {
 public:
     void push(const T& val) {
@@ -33,11 +33,12 @@ public:
         }
         return nullptr;
     }
+
 private:
     struct Node {
         std::shared_ptr<T> data;
         std::shared_ptr<Node> next;
-        Node(const T& d): data(std::make_shared<T>(d)), next(nullptr) {}
+        Node(const T& d) : data(std::make_shared<T>(d)), next(nullptr) {}
     };
     std::shared_ptr<Node> head_ = nullptr;
 };

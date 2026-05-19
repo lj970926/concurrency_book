@@ -6,8 +6,8 @@
 
 #pragma once
 #include <atomic>
-#include <thread>
 #include <functional>
+#include <thread>
 
 /**
  * @brief Entry in the global hazard pointer table.
@@ -20,6 +20,7 @@ struct HazardPointer;
 class HPManager {
 private:
     HazardPointer* hp_;
+
 public:
     /**
      * @brief Claim an unused hazard pointer slot for the current thread.

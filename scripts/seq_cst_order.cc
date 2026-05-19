@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: MIT
 
 #include <atomic>
-#include <thread>
 #include <iostream>
-
+#include <thread>
 
 std::atomic<bool> x = false, y = false;
 int z = 0;
@@ -19,19 +18,18 @@ void write_y() {
 }
 
 void read_x_then_y() {
-    while (!x.load(std::memory_order_seq_cst)) ;
+    while (!x.load(std::memory_order_seq_cst));
     if (y.load(std::memory_order_seq_cst)) {
         ++z;
     }
 }
 
 void read_y_then_x() {
-    while (!y.load(std::memory_order_seq_cst)) ;
+    while (!y.load(std::memory_order_seq_cst));
     if (x.load(std::memory_order_seq_cst)) {
         ++z;
     }
 }
-
 
 int main() {
     std::thread c(read_x_then_y);

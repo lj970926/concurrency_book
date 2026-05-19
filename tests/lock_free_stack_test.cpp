@@ -4,10 +4,9 @@
 
 #include "lock_free_stack.h"
 
-#include <vector>
-#include <thread>
 #include <cassert>
-
+#include <thread>
+#include <vector>
 
 static void smoke_test() {
     LockFreeStack<int> st;
@@ -21,8 +20,8 @@ static void concurrent_push_test() {
     std::vector<int> values_t1 = {0, 1, 2, 3};
     std::vector<int> values_t2 = {4, 5, 6, 7};
     LockFreeStack<int> st;
-    auto insert_vals = [&st](const std::vector<int>& values){
-        for (int v: values) {
+    auto insert_vals = [&st](const std::vector<int>& values) {
+        for (int v : values) {
             st.push(v);
             st.pop();
         }
