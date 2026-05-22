@@ -38,10 +38,9 @@ public:
         RefcountPtr new_head;
         new_head.external_count = 1;
         new_head.ptr = new Node(val);
-        new_head.ptr->next = head_.load();
-        while (!head_.compare_exchange_weak(new_head.ptr->next, new_head)) {
-            std::this_thread::yield();
-        }
+        new_head.ptr->next = head_.load(std::memory_order_relaxed);
+        while (!head_.compare_exchange_weak(new_head.ptr->next, new_head, std::memory_order_release,
+                                            std::memory_order_relaxed));
     }
 
     /**
@@ -59,19 +58,22 @@ public:
      * thread's own claim.
      */
     std::shared_ptr<T> pop() {
-        auto old_head = head_.load();
+        auto old_head = head_.load(std::memory_order_relaxed);
         std::shared_ptr<T> res = nullptr;
         // 1. pin the head node.
         increase_head_count(old_head);
         Node* old_ptr = old_head.ptr;
         // 2. try to take ownership of the head node.
-        while (old_ptr && !head_.compare_exchange_strong(old_head, old_head.ptr->next)) {
+        while (old_ptr && !head_.compare_exchange_strong(old_head, old_head.ptr->next,
+                                                         std::memory_order_relaxed,
+                                                         std::memory_order_relaxed)) {
             // 3. The origin node has been taken by another thread,
             // try if we are the last one and delete it.
             // The old_head has been modified by the CAS,
             // we need to use the old_ptr recorded before.
-            if (old_ptr->internal_count.fetch_sub(1) == 1) {
-                delete old_ptr; 
+            if (old_ptr->internal_count.fetch_sub(1, std::memory_order_relaxed) == 1) {
+                old_ptr->internal_count.load(std::memory_order_acquire);
+                delete old_ptr;
             }
             // pin the new head again.
             increase_head_count(old_head);
@@ -80,11 +82,12 @@ public:
         if (old_head.ptr == nullptr) {
             // It does not matter to have ghost pointer.
             // Because it will be updated when new node pushed.
-            return res; 
+            return res;
         }
         res.swap(old_head.ptr->data);
         int release_cnt = old_head.external_count - 2;
-        if (old_head.ptr->internal_count.fetch_add(release_cnt) == -release_cnt) {
+        if (old_head.ptr->internal_count.fetch_add(release_cnt, std::memory_order_release) ==
+            -release_cnt) {
             delete old_head.ptr;
         }
         return res;
@@ -115,7 +118,7 @@ private:
         std::shared_ptr<T> data;
         RefcountPtr next;
         std::atomic<int> internal_count = 0;
-        Node(const T& d): data(std::make_shared<T>(d)) {}
+        Node(const T& d) : data(std::make_shared<T>(d)) {}
     };
 
     /**
@@ -132,7 +135,8 @@ private:
         do {
             new_head = old_head;
             new_head.external_count++;
-        } while (!head_.compare_exchange_strong(old_head, new_head));
+        } while (!head_.compare_exchange_strong(old_head, new_head, std::memory_order_acquire,
+                                                std::memory_order_relaxed));
         old_head.external_count++;
     }
 
