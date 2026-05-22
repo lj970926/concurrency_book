@@ -46,6 +46,7 @@ Current tests cover:
 - `spin_mutex_test`
 - `lock_free_stack_test`
 - `lock_free_stack_v2_test`
+- `lock_free_stack_v3_test`
 
 ## Components
 
@@ -82,6 +83,19 @@ Related files:
 
 - `include/hp_manager.h`
 - `src/hp_manager.cc`
+
+### LockFreeStackV3
+
+`include/lock_free_stack_v3.h` contains a Treiber-stack-style implementation
+that reclaims nodes with a split reference-counting scheme.
+
+Each node carries an internal atomic counter, and the head pointer carries an
+external counter packed alongside the raw pointer. A popper first bumps the
+external counter on the head to register interest, then races to swing the head
+with compare-exchange. Losing threads release their claim through the internal
+counter; the winning thread folds the remaining external claims into the
+internal counter and deletes the node once both sides agree no other thread
+still references it.
 
 ## Memory-Ordering Examples
 
