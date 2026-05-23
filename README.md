@@ -47,6 +47,7 @@ Current tests cover:
 - `lock_free_stack_test`
 - `lock_free_stack_v2_test`
 - `lock_free_stack_v3_test`
+- `spsc_queue_test`
 
 ## Components
 
@@ -96,6 +97,20 @@ with compare-exchange. Losing threads release their claim through the internal
 counter; the winning thread folds the remaining external claims into the
 internal counter and deletes the node once both sides agree no other thread
 still references it.
+
+### SPSCQueue
+
+`include/spsc_queue.h` contains a lock-free single-producer single-consumer
+queue based on a sentinel (dummy) node.
+
+`tail_` always points to an empty sentinel node. A `push()` writes data into
+the current sentinel and appends a new sentinel before advancing `tail_`.
+`pop()` reads `tail_` to detect whether a new node is available, then
+reclaims the old head. The `tail_.store()` in `push()` synchronizes-with the
+`tail_.load()` in `pop()`, ensuring the written data is visible to the
+consumer before it is read.
+
+`push()` and `pop()` must each be called from a single, dedicated thread.
 
 ## Memory-Ordering Examples
 
