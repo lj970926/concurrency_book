@@ -5,7 +5,6 @@
 #pragma once
 #include <atomic>
 #include <memory>
-#include <thread>
 
 /**
  * @brief Lock-free single-producer single-consumer queue.
