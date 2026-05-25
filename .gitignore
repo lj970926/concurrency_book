@@ -5,3 +5,5 @@ CMakeCache.txt
 CTestTestfile.cmake
 Testing/
 compile_commands.json
+.cache/
+.vscode/

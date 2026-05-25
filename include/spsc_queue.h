@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: MIT
 
+#pragma once
 #include <atomic>
+#include <memory>
 #include <thread>
 
 /**
@@ -18,10 +20,10 @@
  * Data lives in the node immediately before tail_. This avoids a
  * producer–consumer race on the tail node itself.
  */
-template<typename T>
+template <typename T>
 class SPSCQueue {
 public:
-    SPSCQueue(): head_(new Node), tail_(head_.load()) {};
+    SPSCQueue() : head_(new Node), tail_(head_.load()) {}
     SPSCQueue(const SPSCQueue&) = delete;
     SPSCQueue& operator=(const SPSCQueue&) = delete;
 
@@ -74,9 +76,9 @@ private:
     struct Node {
         std::shared_ptr<T> data = nullptr;
         Node* next = nullptr;
-        Node(const T& val): data(std::make_shared<T>(val)), next(nullptr) {}
+        Node(const T& val) : data(std::make_shared<T>(val)), next(nullptr) {}
         Node() = default;
     };
-    std::atomic<Node*> head_; ///< Owned by the consumer thread.
-    std::atomic<Node*> tail_; ///< Owned by the producer thread.
+    std::atomic<Node*> head_;  ///< Owned by the consumer thread.
+    std::atomic<Node*> tail_;  ///< Owned by the producer thread.
 };

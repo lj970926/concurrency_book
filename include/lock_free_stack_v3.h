@@ -6,7 +6,6 @@
 #pragma once
 #include <atomic>
 #include <memory>
-#include <thread>
 
 /**
  * @brief Lock-free Treiber stack that reclaims removed nodes with split
