@@ -48,6 +48,7 @@ Current tests cover:
 - `lock_free_stack_v2_test`
 - `lock_free_stack_v3_test`
 - `spsc_queue_test`
+- `mpmc_queue_test`
 
 ## Components
 
@@ -111,6 +112,23 @@ reclaims the old head. The `tail_.store()` in `push()` synchronizes-with the
 consumer before it is read.
 
 `push()` and `pop()` must each be called from a single, dedicated thread.
+
+### MPMCQueue
+
+`include/mpmc_queue.h` contains a lock-free multi-producer multi-consumer queue
+that extends the SPSC sentinel design with split reference counting for node
+reclamation (Williams, *C++ Concurrency in Action*, Ch. 7).
+
+Both `head_` and `tail_` hold a pointer packed with an external counter. A
+thread first bumps the external counter to register interest, then races to
+publish its work with compare-exchange: producers CAS the new value into the
+sentinel's `data` slot, consumers CAS the head forward. Each node carries an
+internal counter and a small count of how many external slots still point at
+it; reclamation happens only after every external slot has been freed and the
+internal counter has drained the in-flight references folded into it.
+
+Unlike `SPSCQueue`, `push()` and `pop()` may be called from any number of
+threads concurrently.
 
 ## Memory-Ordering Examples
 
