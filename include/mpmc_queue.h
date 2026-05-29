@@ -43,32 +43,36 @@ public:
      *
      * Allocates a new node with a data pointer, then races to install it at
      * the tail via CAS on old_tail.ptr->data. The winner publishes the new
-     * node via an exchange on tail_ (not a store — other producers can bump
-     * external_count between the data-CAS win and the publish), then folds
-     * the remaining external claims into internal_count.
+     * node by CAS-linking it into old_tail.ptr->next, then advances tail_
+     * via set_new_tail. Losers help advance tail_ and retry with a fresh node.
      */
     void push(const T& val) {
         auto new_node = new Node;
         auto new_data = new T(val);
         ExCountPtr old_tail;
+        ExCountPtr new_tail;
         while (true) {
-            ExCountPtr old_tail = tail_.load();
+            old_tail = tail_.load();
+            new_tail.ptr = new_node;
+            new_tail.external_count = 1;
             increase_external_count(tail_, old_tail);
             T* old_data = nullptr;
             if (old_tail.ptr->data.compare_exchange_strong(old_data, new_data)) {
-                ExCountPtr new_tail;
-                new_tail.ptr = new_node;
-                old_tail.ptr->next = new_tail;
-                // Must use exchange, not store: other producers can still bump
-                // tail_.external_count between our data-CAS win and the publish.
-                // Exchange atomically publishes new_tail AND snapshots the final
-                // external_count so free_external_counter can transfer the right
-                // number of in-flight refs into internal_count.
-                old_tail = tail_.exchange(new_tail);
-                free_external_counter(old_tail);
+                ExCountPtr old_next;
+                if (!old_tail.ptr->next.compare_exchange_strong(old_next, new_tail)) {
+                    new_tail = old_next;
+                    delete new_node;
+                }
+                set_new_tail(old_tail, new_tail);
                 break;
+            } else {
+                ExCountPtr old_next;
+                if (old_tail.ptr->next.compare_exchange_strong(old_next, new_tail)) {
+                    old_next = new_tail;
+                    new_node = new Node;
+                }
+                set_new_tail(old_tail, old_next);
             }
-            old_tail.ptr->release_ref();
         }
     }
 
@@ -92,13 +96,17 @@ public:
                 old_head.ptr->release_ref();
                 return nullptr;
             }
-            auto new_head = old_head.ptr->next;
+            auto new_head = old_head.ptr->next.load();
+            // Snapshot the bumped node: a failed CAS below will overwrite
+            // old_head with the current head_, which may point at a *different*
+            // node — release_ref must target the node we actually bumped.
+            auto ptr = old_head.ptr;
             if (head_.compare_exchange_strong(old_head, new_head)) {
                 std::unique_ptr<T> res(old_head.ptr->data);
                 free_external_counter(old_head);
                 return res;
             }
-            old_head.ptr->release_ref();
+            ptr->release_ref();
         }
     }
 
@@ -113,8 +121,10 @@ private:
      */
     struct ExCountPtr {
         Node* ptr = nullptr;
-        int external_count = 1;  ///< 1 == the slot's own implicit reference
+        int64_t external_count = 1;  ///< 1 == the slot's own implicit reference
     };
+
+    static_assert(std::atomic<ExCountPtr>::is_always_lock_free);
 
     /**
      * @brief Atomic refcount embedded in each Node.
@@ -130,6 +140,7 @@ private:
         unsigned int num_external_counters : 2;
         NodeCounter() : internal_count(0), num_external_counters(2) {}
     };
+    static_assert(std::atomic<NodeCounter>::is_always_lock_free);
 
     /**
      * @brief Singly linked queue node.
@@ -141,8 +152,8 @@ private:
      */
     struct Node {
         std::atomic<T*> data = nullptr;
-        std::atomic<NodeCounter> counter;
-        ExCountPtr next;
+        std::atomic<NodeCounter> counter = NodeCounter{};
+        std::atomic<ExCountPtr> next = ExCountPtr{};
 
         /**
          * @brief Decrement internal_count and delete this Node if it is no
@@ -202,6 +213,25 @@ private:
 
         if (new_counter.internal_count == 0 && new_counter.num_external_counters == 0) {
             delete old_node;
+        }
+    }
+
+    /**
+     * @brief Advance tail_ to new_tail, then release old_tail's external claim.
+     *
+     * Spins with CAS-weak until tail_ is published or a different node
+     * already replaced it. If another thread already moved tail_ forward,
+     * releases old_tail's reference instead of freeing the external counter.
+     */
+    void set_new_tail(ExCountPtr old_tail, ExCountPtr new_tail) {
+        Node* current_node_ptr = old_tail.ptr;
+        while (!tail_.compare_exchange_weak(old_tail, new_tail) &&
+               old_tail.ptr == current_node_ptr);
+
+        if (old_tail.ptr == current_node_ptr) {
+            free_external_counter(old_tail);
+        } else {
+            current_node_ptr->release_ref();
         }
     }
 
