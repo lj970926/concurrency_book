@@ -11,6 +11,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(CONCURRENCY_BOOK_BUILD_TESTS "Build concurrency_book tests" ON)
+
 if(ENABLE_ASAN)
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
     add_link_options(-fsanitize=address)
@@ -18,7 +20,6 @@ endif()
 
 add_subdirectory(src)
 
-option(CONCURRENCY_BOOK_BUILD_TESTS "Build concurrency_book tests" ON)
 
 if(CONCURRENCY_BOOK_BUILD_TESTS)
     enable_testing()

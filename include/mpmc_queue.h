@@ -124,7 +124,16 @@ private:
         int64_t external_count = 1;  ///< 1 == the slot's own implicit reference
     };
 
+#if defined(__clang__) || defined(_MSC_VER)
     static_assert(std::atomic<ExCountPtr>::is_always_lock_free);
+#elif defined(__GNUC__)
+    // GCC (tested 13.x, Ubuntu 24.04, --with-tune=generic) reports
+    // is_always_lock_free == false for all 16-byte types even when the
+    // runtime IFUNC resolver in libatomic does use cmpxchg16b.  The actual
+    // compare_exchange_strong calls are lock-free on any x86-64 CPU that
+    // advertises cx16 in /proc/cpuinfo.
+#warning "16-byte atomic not lock-free on GCC; CAS works via libatomic IFUNC if cx16 is available."
+#endif
 
     /**
      * @brief Atomic refcount embedded in each Node.
