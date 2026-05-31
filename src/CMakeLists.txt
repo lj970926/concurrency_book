@@ -9,5 +9,8 @@ file(GLOB SRCS CONFIGURE_DEPENDS
 )
 add_library(concurrency_book SHARED ${SRCS})
 target_include_directories(concurrency_book PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
 target_compile_features(concurrency_book INTERFACE cxx_std_17)
-target_link_libraries(concurrency_book PUBLIC atomic)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(concurrency_book PUBLIC atomic)
+endif()
