@@ -49,6 +49,8 @@ Current tests cover:
 - `lock_free_stack_v3_test`
 - `spsc_queue_test`
 - `mpmc_queue_test`
+- `thread_safe_stack_test`
+- `parallel_quick_sort_test`
 
 ## Components
 
@@ -129,6 +131,33 @@ internal counter has drained the in-flight references folded into it.
 
 Unlike `SPSCQueue`, `push()` and `pop()` may be called from any number of
 threads concurrently.
+
+### ThreadSafeStack
+
+`include/thread_safe_stack.h` contains a mutex-based thread-safe stack.
+
+`push()` copies the value into a `std::shared_ptr` and stores it under a
+`std::lock_guard`. `pop()` returns a `std::shared_ptr<T>` (or `nullptr` when
+empty), which avoids the race between checking emptiness and using the popped
+value — the caller holds a valid handle even if another thread concurrently
+modifies the stack.
+
+### ParallelQuickSort
+
+`include/parallel_quick_sort.h` contains a parallel quicksort that partitions
+work across a pool of worker threads.
+
+The algorithm uses a Dutch-national-flag three-way partition (`< pivot`,
+`== pivot`, `> pivot`) so that duplicate-heavy ranges degrade gracefully.
+Sub-ranges smaller than a configurable threshold (`kMinChunkSize`) fall back to
+`std::sort` to avoid per-element task overhead. The left sub-range is dispatched
+as a pool task while the right sub-range is recursed on the current thread,
+keeping the critical path short.
+
+Related files:
+
+- `include/thread_safe_stack.h` (used as the internal task queue)
+- `tests/parallel_quick_sort_test.cpp`
 
 ## Memory-Ordering Examples
 
