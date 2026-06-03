@@ -103,7 +103,7 @@ private:
      */
     struct RefcountPtr {
         Node* ptr = nullptr;
-        int external_count = 0;
+        int64_t external_count = 1;
     };
 
     /**

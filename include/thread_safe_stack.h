@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <stack>
+#include <utility>
 
 /**
  * @brief A thread-safe stack implementation using a mutex.
@@ -33,6 +34,11 @@ public:
     void push(const T& val) {
         std::lock_guard guard(mutex_);
         inner_stack_.push(std::make_shared<T>(val));
+    }
+
+    void push(T&& val) {
+        std::lock_guard guard(mutex_);
+        inner_stack_.push(std::make_shared<T>(std::move(val)));
     }
 
     /**
