@@ -47,8 +47,12 @@ public:
      * via set_new_tail. Losers help advance tail_ and retry with a fresh node.
      */
     void push(const T& val) {
+        // Hold the data in a unique_ptr so an exception anywhere before
+        // ownership is handed to the queue (T's copy ctor, or `new Node`'s
+        // bad_alloc) cannot leak it. Ownership is released only once the data
+        // pointer has been published into a node via CAS.
+        std::unique_ptr<T> new_data(new T(val));
         auto new_node = new Node;
-        auto new_data = new T(val);
         ExCountPtr old_tail;
         ExCountPtr new_tail;
         while (true) {
@@ -57,13 +61,14 @@ public:
             new_tail.external_count = 1;
             increase_external_count(tail_, old_tail);
             T* old_data = nullptr;
-            if (old_tail.ptr->data.compare_exchange_strong(old_data, new_data)) {
+            if (old_tail.ptr->data.compare_exchange_strong(old_data, new_data.get())) {
                 ExCountPtr old_next;
                 if (!old_tail.ptr->next.compare_exchange_strong(old_next, new_tail)) {
                     new_tail = old_next;
                     delete new_node;
                 }
                 set_new_tail(old_tail, new_tail);
+                new_data.release();  // ownership now belongs to the queue node
                 break;
             } else {
                 ExCountPtr old_next;
